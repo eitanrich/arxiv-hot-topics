@@ -27,11 +27,12 @@ if __name__ == "__main__":
         references = {}
     print('{} papers already have listed references'.format(len(references)))
 
-    added_count = 0
+    query_count = 0
     for arxiv_id in sorted(list(db.keys())):
         if arxiv_id in references:
             continue
-        # arxiv_id = '1805.12462'
+        query_count += 1
+
         query_url = 'https://api.semanticscholar.org/v1/paper/arXiv:' + arxiv_id
         try:
             with urllib.request.urlopen(query_url) as url:
@@ -52,11 +53,10 @@ if __name__ == "__main__":
                              'authors': authors})
             references[arxiv_id] = refs
             print('Found {} references for {}'.format(len(refs), arxiv_id))
-            added_count += 1
 
-        if added_count>0 and added_count%20 == 0:
+        if query_count%10 == 0:
             dump_refs(refs_file, references)
-        time.sleep(random.uniform(3, 5))
+            time.sleep(random.uniform(3, 5))
 
     dump_refs(refs_file, references)
     print('Done')
