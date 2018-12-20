@@ -33,7 +33,7 @@ if __name__ == "__main__":
             continue
         query_count += 1
 
-        query_url = 'https://api.semanticscholar.org/v1/paper/arXiv:' + arxiv_id
+        query_url = 'https://api.semanticscholar.org/v1/paper/arXiv:' + arxiv_id + '?include_unknown_references=true'
         try:
             with urllib.request.urlopen(query_url) as url:
                 response = url.read()
