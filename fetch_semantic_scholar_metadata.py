@@ -5,12 +5,11 @@ import urllib.request
 import json
 import time
 import random
-
+from utils import safe_pickle_dump
 
 def dump_refs(file_name, references):
     print('Saving references file with entries for {} papers'.format(len(references)))
-    with open(file_name, 'wb') as f:
-        pickle.dump(references, f, -1)
+    safe_pickle_dump(references, file_name)
 
 
 if __name__ == "__main__":
