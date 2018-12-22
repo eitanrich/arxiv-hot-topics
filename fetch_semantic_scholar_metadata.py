@@ -29,11 +29,12 @@ if __name__ == "__main__":
     query_count = 0
     num_added_refs = 0
     for arxiv_id in sorted(list(db.keys())):
-        if arxiv_id in references:
+        if arxiv_id in references and references[arxiv_id]:
             continue
         query_count += 1
 
-        query_url = 'https://api.semanticscholar.org/v1/paper/arXiv:' + arxiv_id + '?include_unknown_references=true'
+        query_id = arxiv_id if '.' in arxiv_id else 'cs/' + arxiv_id
+        query_url = 'https://api.semanticscholar.org/v1/paper/arXiv:' + query_id + '?include_unknown_references=true'
         try:
             with urllib.request.urlopen(query_url) as url:
                 response = url.read()
