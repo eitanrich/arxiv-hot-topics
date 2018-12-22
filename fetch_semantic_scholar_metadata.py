@@ -27,6 +27,7 @@ if __name__ == "__main__":
     print('{} papers already have listed references'.format(len(references)))
 
     query_count = 0
+    num_added_refs = 0
     for arxiv_id in sorted(list(db.keys())):
         if arxiv_id in references:
             continue
@@ -51,11 +52,14 @@ if __name__ == "__main__":
                              'year': ref['year'],
                              'authors': authors})
             references[arxiv_id] = refs
+            num_added_refs += 1
             print('Found {} references for {}'.format(len(refs), arxiv_id))
 
         if query_count%10 == 0:
-            dump_refs(refs_file, references)
             time.sleep(random.uniform(3, 5))
+
+        if num_added_refs%100 == 0:
+            dump_refs(refs_file, references)
 
     dump_refs(refs_file, references)
     print('Done')
