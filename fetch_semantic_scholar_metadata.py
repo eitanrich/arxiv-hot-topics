@@ -59,8 +59,9 @@ if __name__ == "__main__":
         if query_count%10 == 0:
             time.sleep(random.uniform(3, 5))
 
-        if num_added_refs>0 and num_added_refs%100 == 0:
+        if num_added_refs == 100:
             dump_refs(refs_file, references)
+            num_added_refs = 0
 
     dump_refs(refs_file, references)
     print('Done')
