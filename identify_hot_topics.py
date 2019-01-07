@@ -99,6 +99,7 @@ def hottest(category, curr_year):
     ratio_ctr, new_comers = top_increase(curr_counter, past_counter)
     top_unigram = ratio_ctr.most_common(100)
     new_comers_unigram = new_comers.most_common(100)
+    least_unigram = ratio_ctr.most_common()[:-100-1:-1]
 
     past_bigrams = get_bigrams(past_text)
     curr_bigrams = get_bigrams(curr_text)
@@ -109,7 +110,8 @@ def hottest(category, curr_year):
     ratio_ctr, new_comers = top_increase(curr_counter, past_counter)
     top_bigram = ratio_ctr.most_common(100)
     new_comers_bigram = new_comers.most_common(100)
-    return top_unigram, new_comers_unigram, top_bigram, new_comers_bigram
+    least_bigram = ratio_ctr.most_common()[:-100-1:-1]
+    return top_unigram, new_comers_unigram, least_unigram, top_bigram, new_comers_bigram, least_bigram
 
 
 def write_to_file(filename, line):
@@ -118,7 +120,7 @@ def write_to_file(filename, line):
         writer.writerow(line)
 
 def output_yearly_results():
-    filenames = ["top_unigram.csv", "new_comers_unigram.csv", "top_bigram.csv", "new_comers_bigram.csv"]
+    filenames = ["top_unigram.csv", "new_comers_unigram.csv", "least_unigram.csv", "top_bigram.csv", "new_comers_bigram.csv", "least_bigram.csv"]
     for filename in filenames:
         write_to_file(filename, list(range(11)))
     for year in list(range(2012,2019))[::-1]:
@@ -139,7 +141,6 @@ def draw(x, y, xlabel, ylabel, title, label):
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
-    plt.title("Term Popularity by Year")
     plt.legend(loc='upper left')
     #plt.savefig("output/"+title+".png")
     plt.savefig("output/term_popularity.png")
@@ -165,10 +166,11 @@ def graph_text(text, category):
     years = sorted(yearly_text[category])
     print(yearly_values)
     print(years)
-    draw(years, yearly_values, "years", "occurrences", text + " occurrences by year in " + category, text)
+    draw(years, yearly_values, "years", "occurrences", "Occurrences by year in " + category, text)
 
 if __name__ == "__main__":
-    search_items = ["cnn", "gan", "lstm", "svm"]
+    #output_yearly_results()
+    search_items = ["cnn", "gan", "lstm", "mle", "hmm", "adaboost"]
     for search_item in search_items:
         graph_text(search_item, "stat.ML")
 
