@@ -23,6 +23,8 @@ def create_author_network(coauthor_file):
     coauthor_graph = nx.Graph()
     add_all_authors(coauthor_graph, db)
     nx.write_gpickle(coauthor_graph, path=coauthor_file)
+
+
 def add_all_authors(coauthor_graph, db):
         added = 0
         for arxiv_id in sorted(list(db.keys())):
@@ -32,6 +34,7 @@ def add_all_authors(coauthor_graph, db):
                 nx.write_gpickle(coauthor_graph, path=coauthor_file)
                 added = 0
         print('Done')
+
 def add_article_authors(coauthor_graph, article_data):
         authors = [auth['name'] for auth in article_data['authors']]
         for pair in itertools.combinations(authors, r=2):
@@ -43,9 +46,9 @@ def add_article_authors(coauthor_graph, article_data):
 
 ## Create a directed citation graph ##
 class Article:
-
     def __init__(self, data):
         self.id = data['arxivId']
+        self.paperid = data['paperId']
         self.authors = [a['name'] for a in data['authors']]
         self.title = data['title']
         self.year = data['year']
@@ -105,6 +108,31 @@ def query_all(db):
             print('already added', num_added)
     print('Done')
 
+
+def update_all(db):
+    '''
+    get citation data from semantic scholar for all articles in db
+    '''
+    queried = Counter()
+    num_added = 0
+    for arxiv_id in sorted(list(db.keys())):
+        if queried[arxiv_id]: #already queried this article
+            continue
+        queried[arxiv_id] = True
+        update_ref_graph(db[arxiv_id], arxiv_id)
+        num_added += 1
+        if num_added%100 == 0:
+            print('already added', num_added)
+    print('Done')
+
+
+def update_ref_graph(refs, arxiv_id):
+    curr = arxiv_id
+    for refd_article_data in refs:
+        id = refd_article_data['arxivId']
+        if id:
+            article_graph.add_edge(curr, id)
+
 def query_article(arxiv_id):
     query_id = arxiv_id if '.' in arxiv_id else 'cs/' + arxiv_id
     query_url = 'https://api.semanticscholar.org/v1/paper/arXiv:' + query_id + '?include_unknown_references=true'
@@ -121,12 +149,15 @@ def query_article(arxiv_id):
     return False
 
 if __name__ == "__main__":
-    article_graph = nx.DiGraph()
-    db_file = r'./data/db2.p'
-    citation_network_file = r'./data/citation_network.gp'
-    coauthor_file = r'./data/citation_network.gp'
-    print(os.getcwd())
-    db = pickle.load(open(db_file, 'rb'))
-    query_all(db)
-    nx.write_gpickle(G = article_graph, path = citation_network_file)
+    # article_graph = nx.DiGraph()
+    # db_file = r'./data/refs_db.p'
+    citation_network_file = r'./data/citation_network_just_refs.gp'
+    # coauthor_file = r'./data/citation_network.gp'
+    # print(os.getcwd())
+    # db = pickle.load(open(db_file, 'rb'))
+    # update_all(db)
+    # #query_all(db)
+    # nx.write_gpickle(G = article_graph, path = citation_network_file)
+    g = nx.read_gpickle( path = citation_network_file)
+    nx.write_gexf(g, path =  r'./data/citation_network_just_refs.gexf')
 
