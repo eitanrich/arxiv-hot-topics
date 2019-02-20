@@ -4,8 +4,8 @@ import community        # pip install python-louvain
 import numpy as np
 import pickle as pkl
 import time
+from collections import Counter
 from matplotlib import pyplot as plt
-
 
 if __name__ == "__main__":
     print('Reading data...')
@@ -19,11 +19,48 @@ if __name__ == "__main__":
     g = g.subgraph(p_sebset)
     print(len(g.nodes), len(g.edges))
 
-    print('Finding best_partition...')
     g_u = g.to_undirected()
-    part = community.best_partition(g_u, resolution=10.)
-    print('Saving...')
-    pkl.dump(part, open(r'./data/best_partition_part.p', 'wb'))
+    print('Generating dendogram...')
+    t0 = time.time()
+    dendogram = community.generate_dendrogram(g_u)
+    pkl.dump(dendogram, open(r'./data/community_dendogram.p', 'wb'))
+    print('Took', time.time() - t0)
+    # dendogram = pkl.load(open(r'./data/community_dendogram.p', 'rb'))
+    print(len(dendogram))
+
+    for level in range(len(dendogram) - 1) :
+        part = community.partition_at_level(dendogram, level)
+        print(len(set(part.values())), sorted(Counter(part.values()).values())[-30:])
+
+    part = community.partition_at_level(dendogram, 0)
+
+    # TODO: Visualize and find common terms in each component...
+    # TODO: Hierarchically cluster the large components
+
+    #
+    # for level in range(len(dendogram) - 1) :
+    #     part = community.partition_at_level(dendogram, level)
+    #     print(len(set(part.values())), sorted(Counter(part.values()).values())[-30:])
+    # exit()
+    #
+    #
+    # print('Finding best_partition...')
+    # part = community.best_partition(g_u, resolution=10.)
+    # print('Saving...')
+    # pkl.dump(part, open(r'./data/best_partition_part.p', 'wb'))
+    #
+    # print('Repeating...')
+    # g_u_0 = g_u.subgraph([id for id, p in part.items() if p==0])
+    # print(len(g_u_0.nodes))
+    # part_0 = community.best_partition(g_u_0, resolution=10.)
+    # g_u_0_0 = g_u_0.subgraph([id for id, p in part_0.items() if p==0])
+    # print(len(g_u_0_0.nodes))
+    #
+
+    # for i in range(100):
+    #     print(i, len([id for id, p in part.items() if p==i]))
+
+
     # part = pkl.load(open(r'./data/best_partition_part.p', 'rb'))
 
 
@@ -71,4 +108,3 @@ if __name__ == "__main__":
     # colors[is_t1] = 0
     # nx.draw(g_topic, with_labels=False, alpha=0.5, node_size=150, node_color=colors, cmap='jet')
     # plt.show()
-
