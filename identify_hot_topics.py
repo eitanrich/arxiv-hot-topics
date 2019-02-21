@@ -49,8 +49,14 @@ class HotTopics(object):
         pickle.dump(total_text, open("./data/total_text.p","wb"))
         return yearly_text, total_text
 
+
 def get_bigrams(text):
     bigrams = [" ".join(bigram) for bigram in zip(*[text, text[1:]])]
+    return bigrams
+
+
+def get_trigrams(text):
+    bigrams = [" ".join(bigram) for bigram in zip(*[text, text[1:], text[2:]])]
     return bigrams
 
 
@@ -69,8 +75,8 @@ def most_common():
     print(bigram_ctr.most_common(100))
 
 def top_increase(curr_counter, past_counter):
-    past_counter = {a:b for a,b in past_counter.items() if b>5}
-    curr_counter = {a:b for a,b in curr_counter.items() if b>5}
+    past_counter = {a:b for a,b in past_counter.items() if b>25}
+    curr_counter = {a:b for a,b in curr_counter.items() if b>25}
     normalize_counter(past_counter)
     normalize_counter(curr_counter)
     ratio_ctr = Counter()
@@ -84,9 +90,10 @@ def top_increase(curr_counter, past_counter):
             ratio_ctr[key] = curr_counter[key] / past_counter[key]
     return ratio_ctr, new_comers
 
+
 def hottest(category, curr_year):
-    #ht = HotTopics()
-    #ht.extract_yearly_texts()
+    ht = HotTopics()
+    ht.extract_yearly_texts()
     yearly_text = pickle.load(open(r'./data/yearly_text.p', 'rb'))
     curr_text = yearly_text[category][curr_year]
     prev_period = range(curr_year-5, curr_year)
@@ -106,7 +113,7 @@ def hottest(category, curr_year):
     #print(past_bigrams)
     past_counter = Counter(past_bigrams)
     curr_counter = Counter(curr_bigrams)
-    #exit()
+
     ratio_ctr, new_comers = top_increase(curr_counter, past_counter)
     top_bigram = ratio_ctr.most_common(100)
     new_comers_bigram = new_comers.most_common(100)
@@ -129,7 +136,6 @@ def output_yearly_results():
         for (curr_filename, curr_results) in zip(*[filenames, hottest_results]):
             line = [year] + [item for item in curr_results[:10]]
             write_to_file(curr_filename, line)
-
 
 
 def test():
