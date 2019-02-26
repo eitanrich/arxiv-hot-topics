@@ -40,6 +40,15 @@ def collect_ids_and_titles(db, refs_db):
     return id_to_title, title_to_id
 
 
+def create_id_to_year():
+    arxiv_id_to_year = {k: int(p['published'][:4]) for k, p in db.items()}
+    ext_title_to_year = {normalize(r['title']): int(r['year'] or -1) for r_list in refs_db.values() for r in r_list}
+    ext_id_to_year = {k: ext_title_to_year.get(t, -1) for k, t in id_to_title.items() if k.startswith('ext:')}
+    id_to_year = {**arxiv_id_to_year, **ext_id_to_year}
+    id_to_year = {k: (v if v > 1900 else 0) for k, v in id_to_year.items()}
+    pkl.dump(id_to_year, open(r'./data/all_ids_to_years.p', 'wb'))
+
+
 if __name__ == "__main__":
     print('Reading data...')
     db = pkl.load(open(r'./data/db.p', 'rb'))
@@ -50,6 +59,9 @@ if __name__ == "__main__":
     refs_db = pkl.load(open(r'./data/refs_db.p', 'rb'))
 
     id_to_title, title_to_id = collect_ids_and_titles(db, refs_db)
+
+    # create_id_to_year()
+    # exit()
 
     print('Creating the graph...')
     article_graph = nx.DiGraph()
