@@ -20,19 +20,34 @@ if __name__ == "__main__":
     print(len(g.nodes), len(g.edges))
 
     g_u = g.to_undirected()
-    print('Generating dendogram...')
-    t0 = time.time()
-    dendogram = community.generate_dendrogram(g_u)
-    pkl.dump(dendogram, open(r'./data/community_dendogram.p', 'wb'))
-    print('Took', time.time() - t0)
-    # dendogram = pkl.load(open(r'./data/community_dendogram.p', 'rb'))
-    print(len(dendogram))
 
-    for level in range(len(dendogram) - 1) :
-        part = community.partition_at_level(dendogram, level)
-        print(len(set(part.values())), sorted(Counter(part.values()).values())[-30:])
+    # print('Generating dendogram...')
+    # t0 = time.time()
+    # dendogram = community.generate_dendrogram(g_u)
+    # pkl.dump(dendogram, open(r'./data/community_dendogram.p', 'wb'))
+    # print('Took', time.time() - t0)
+    # # dendogram = pkl.load(open(r'./data/community_dendogram.p', 'rb'))
+    # print(len(dendogram))
+    #
+    # for level in range(len(dendogram) - 1) :
+    #     part = community.partition_at_level(dendogram, level)
+    #     print(len(set(part.values())), sorted(Counter(part.values()).values())[-30:])
+    #
+    # part = community.partition_at_level(dendogram, 0)
 
-    part = community.partition_at_level(dendogram, 0)
+    dendo = pkl.load(open(r'./data/community_dendogram.p', 'rb'))
+    part = dendo[0]
+    c = Counter(part.values())
+    c_order = np.argsort(list(c.values()))[::-1]
+    for i in range(c_order.size):
+        papers = [id for id, p in part.items() if p==c_order[i]]
+        print('Cluster {} - {} papers'.format(i, len(papers)))
+        g_c = g_u.subgraph(papers)
+        dendo = community.generate_dendrogram(g_c)
+        pkl.dump(dendo, open(r'./data/sub_community_dendogram_{}.p'.format(i), 'wb'))
+        if len(papers) < 1500:
+            break
+
 
     # TODO: Visualize and find common terms in each component...
     # TODO: Hierarchically cluster the large components
