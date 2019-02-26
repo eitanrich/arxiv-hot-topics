@@ -6,6 +6,7 @@ import time
 import operator
 import re
 import pickle as pkl
+import csv
 from collections import Counter
 from matplotlib import pyplot as plt
 from wordcloud import WordCloud
@@ -92,6 +93,7 @@ if __name__ == "__main__":
     # print(len(g.nodes), len(g.edges))
 
     id_to_title, _ = pkl.load(open(r'./data/all_ids_and_titles.p', 'rb'))
+    id_to_year = pkl.load(open(r'./data/all_ids_to_years.p', 'rb'))
     clusters_list = construct_clusters_list()
     pkl.dump(clusters_list, open(r'./data/clusters_id_list.p', 'wb'))
 
@@ -124,4 +126,17 @@ if __name__ == "__main__":
         # Create word clouds
         wordcloud = WordCloud(max_font_size=60, width=600, height=300).fit_words(c_common_terms)
         wordcloud.to_file(os.path.join(c_dir, 'wordcloud.jpg'))
+
+        # Create papers-per-year list
+        years = [id_to_year.get(p, -1) for p in papers]
+        years = [y for y in years if y>1960]
+        total = float(len(years))
+        if total/len(papers) < 0.8:
+            print('Only {} papers have a valid year!'.format(len(years)))
+        y_count = Counter(years)
+        with open(os.path.join(c_dir, 'papers_per_year.csv'), 'w', newline='') as outf:
+            writer = csv.writer(outf)
+            writer.writerow(['year', 'rel_papers'])
+            for year in range(min(years), max(years)+1):
+                writer.writerow([year, y_count.get(year, 0)/total])
 
